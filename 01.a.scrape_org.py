@@ -46,6 +46,7 @@ for repo_in in org_in.get_repos():
         'full_name': repo_in.full_name,
         'collaborators': []
     }
+    # Process each collaborator of the current repo
     for collaborator_in in repo_in.get_collaborators():
         log_raw('repo_in.get_collaborators()', collaborator_in)
         repo_out['collaborators'].append({
@@ -105,6 +106,7 @@ for team_in in org_in.get_teams():
             'role': team_membership_in.role,
             'state': team_membership_in.state
         })
+
     # Process each repo of the current team
     for repo_in in team_in.get_repos():
         log_raw('team_in.get_repos()', repo_in)
