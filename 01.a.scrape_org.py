@@ -5,7 +5,8 @@
 # - Each organization member
 # - Each outside collaborator
 # - Each team, and per team, its permissions for the repos of that team
-# 
+# The variable `org_out` contains the main data on the governance structure, while `raw_out` contains detailed information on each request/response made to construct `org_out`
+#
 # Thomas Pronk, 2024-11-11
 
 # Libraries
@@ -15,13 +16,8 @@ from github import Auth
 
 # Globals
 org_name = 'AmsterdamUMC'
-
-# Copying raw responses from PyGitHub to a dict
-def dictify_response(source):
-    return {
-        'raw_data': source.raw_data,
-        'raw_headers': source.raw_headers
-    }
+org_out = {}
+raw_out = []
 
 # Login to GitHub
 auth = Auth.Token(os.environ['GITHUB_TOKEN'])
@@ -29,19 +25,31 @@ gh = Github(auth=auth)
 
 # Process the current organization
 org_in = gh.get_organization(org_name)
-org_out = {}
+log_raw('gh.get_organization(org_name)', org_in)
 
-# # Process each repo of the current organization
+# Log a raw request
+def log_raw(request, result):
+    raw_result = {
+        'request': request,
+        'raw_data': result.raw_data,
+        'raw_headers': result.raw_headers,
+    }
+    print(json.dumps(raw_result, indent = 2))
+    raw_out.append(raw_result)
+
+
+# Process each repo of the current organization
 org_out['repos'] = []
 for repo_in in org_in.get_repos():
+    log_raw('org_in.get_repos()', repo_in)
     repo_out = {
         'full_name': repo_in.full_name,
         'collaborators': []
     }
     for collaborator_in in repo_in.get_collaborators():
+        log_raw('repo_in.get_collaborators()', collaborator_in)
         repo_out['collaborators'].append({
             'login': collaborator_in.login,
-            'role': collaborator_in.role,
             'admin': collaborator_in.permissions.admin,
             'maintain': collaborator_in.permissions.maintain,
             'push': collaborator_in.permissions.push,
@@ -53,16 +61,19 @@ for repo_in in org_in.get_repos():
 # Process each member of the organization
 org_out['members'] = []
 for member_in in org_in.get_members():
-    membership_in = member_in.get_organization_membership(org_name)
+    log_raw('org_in.get_members()', member_in)    
+    organization_membership_in = member_in.get_organization_membership(org_name)
+    log_raw('member_in.get_organization_membership(org_name)', organization_membership_in)    
     org_out['members'].append({
         'login': member_in.login,
-        'role': membership_in.role,
-        'state': membership_in.state
+        'role': organization_membership_in.role,
+        'state': organization_membership_in.state
     })
 
 # Process each outside collaborator of the organization
 org_out['outside_collaborators'] = []
 for outside_collaborator_in in org_in.get_outside_collaborators():
+    log_raw('org_in.get_outside_collaborators()', outside_collaborator_in)    
     org_out['outside_collaborators'].append({
         'login': outside_collaborator_in.login
     })
@@ -70,6 +81,7 @@ for outside_collaborator_in in org_in.get_outside_collaborators():
 # Process each team of the current organization
 org_out['teams'] = []
 for team_in in org_in.get_teams():
+    log_raw('org_in.get_teams()', team_in)
     team_out = {
         'name': team_in.name,
         'id': team_in.id,
@@ -85,15 +97,19 @@ for team_in in org_in.get_teams():
     
     # Process each member of the current team
     for member_in in team_in.get_members():
-        membership_in = team_in.get_team_membership(member_in)
+        log_raw('team_in.get_members()', member_in)
+        team_membership_in = team_in.get_team_membership(member_in)
+        log_raw('team_in.get_team_membership(member_in)', team_membership_in)
         team_out['members'].append({
             'login': member_in.login,
-            'role': membership_in.role,
-            'state': membership_in.state
+            'role': team_membership_in.role,
+            'state': team_membership_in.state
         })
     # Process each repo of the current team
     for repo_in in team_in.get_repos():
+        log_raw('team_in.get_repos()', repo_in)
         permission_in = team_in.get_repo_permission(repo_in)
+        log_raw('team_in.get_repo_permission(repo_in)', permission_in)
         team_out['repos'].append({
             'full_name': repo_in.full_name,
             'admin': permission_in.admin,
@@ -105,10 +121,12 @@ for team_in in org_in.get_teams():
 
     org_out['teams'].append(team_out)
 
-# Wrap up repodata
+# Wrap up 
 print(json.dumps(org_out, indent = 2))
 with open('data-out/org_out.json', 'w') as f:
     json.dump(org_out, f, indent = 2)
+with open('data-out/raw_out.json', 'w') as f:
+    json.dump(raw_out, f, indent = 2)
 
 # Close connections
 gh.close()
