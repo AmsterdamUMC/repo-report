@@ -19,15 +19,8 @@ org_name = 'AmsterdamUMC'
 org_out = {}
 raw_out = []
 
-# Login to GitHub
-auth = Auth.Token(os.environ['GITHUB_TOKEN'])
-gh = Github(auth=auth)
-
-# Process the current organization
-org_in = gh.get_organization(org_name)
-log_raw('gh.get_organization(org_name)', org_in)
-
-# Log a raw request
+# *** Functions
+# Log a raw request and response (consisting of data + headers)
 def log_raw(request, result):
     raw_result = {
         'request': request,
@@ -37,6 +30,21 @@ def log_raw(request, result):
     print(json.dumps(raw_result, indent = 2))
     raw_out.append(raw_result)
 
+# Make a raw request to the GitHub REST API via PyGithub
+def get_request(slug):
+    response = gh.requester.requestJsonAndCheck("GET", gh.requester.base_url + slug)
+    result = lambda: None
+    result.raw_data = response[1]
+    result.raw_headers = response[0]
+    return result
+
+# Login to GitHub
+auth = Auth.Token(os.environ['GITHUB_TOKEN'])
+gh = Github(auth=auth)
+
+# Process the current organization
+org_in = gh.get_organization(org_name)
+log_raw('gh.get_organization(org_name)', org_in)
 
 # Process each repo of the current organization
 org_out['repos'] = []
@@ -122,6 +130,40 @@ for team_in in org_in.get_teams():
         })
 
     org_out['teams'].append(team_out)
+
+# Process each organization role. Per organization role, list which teams and users have that role.
+org_out['organization_roles'] = []
+org_roles_in = get_request('/orgs/' + org_name + '/organization-roles')
+log_raw("get_request('/orgs/' + org_name + '/organization-roles')", org_roles_in)
+for org_role_in in org_roles_in.raw_data['roles']:
+    org_role_out = {
+        'id': org_role_in['id'],
+        'name': org_role_in['name'],
+        'teams': [],
+        'users': []
+    }
+
+    teams_in = get_request('/orgs/' + org_name + '/organization-roles/' + str(org_role_in['id']) + '/teams')
+    log_raw("get_request('/orgs/' + org_name + '/organization-roles/' + str(org_role_in['id']) + '/teams')", teams_in)
+    for team_in in teams_in.raw_data:
+        org_role_out['teams'].append({
+            'name': team_in['name'],
+            'id': team_in['id']
+        })
+
+    users_in = get_request('/orgs/' + org_name + '/organization-roles/' + str(org_role_in['id']) + '/users')
+    log_raw("get_request('/orgs/' + org_name + '/organization-roles/' + str(org_role_in['id']) + '/users')", users_in)
+    for user_in in users_in.raw_data:
+        org_role_out['users'].append({
+            'login': user_in['login'],
+            'id': user_in['id']
+        })
+
+    org_out['organization_roles'].append(org_role_out)
+
+
+# 2do. List users and teams that have each organization role
+# https://docs.github.com/en/rest/orgs/organization-roles?apiVersion=2022-11-28#list-users-that-are-assigned-to-an-organization-role
 
 # Wrap up 
 print(json.dumps(org_out, indent = 2))
