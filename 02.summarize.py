@@ -1,43 +1,60 @@
 # 02.summarize.py
 #
-# Summarize the scraped repos into tables
-
-# 
 import json, pandas as pd
 
-tables = {}
-with open('data-out/scraped_data.json') as f:
-    scraped_data = json.load(f)
+# *** Summarize the governance data into a set of tables
+with open('data/governance.clean.json') as f:
+    governance_json = json.load(f)
 
-def flatten(response):
-    return {**response['raw_data'], **response['raw_headers']}
+# Repos
+repos_df = pd.json_normalize(
+    governance_json['repos'],
+    'collaborators',
+    ['full_name']
+)
+repos_df.to_csv('data/governance.repos.csv', index=False)
 
+# Members
+members_df = pd.json_normalize(
+    governance_json['members']
+)
+repos_df.to_csv('data/governance.members.csv', index=False)
 
-flat_repos = []
-flat_commits = []
-summaries = []
-for repo in scraped_data['repos']:
-    summary = {}
-    flat_repo = flatten(repo)
-    flat_repos.append(flat_repo)
-    summary['html_url'] = repo['raw_data']['html_url']
-    for commit in repo['commits']:
-        flat_commit = flatten(commit)
-        flat_commit['repo.html_url'] = repo['raw_data']['html_url']
-        try:
-            flat_commit['author.login'] = commit['raw_data']['author']['login']
-        except:
-            pass
+# Outside collaborators
+outside_collaborators_df = pd.json_normalize(
+    governance_json['outside_collaborators']
+)
+outside_collaborators_df.to_csv('data/governance.outside_collaborators.csv', index=False)
 
-        try:
-            flat_commit['author.name'] = commit['raw_data']['commit']['author']['name']
-        except:
-            pass
+# Teams by members
+teams_members_df = pd.json_normalize(
+    governance_json['teams'],
+    'members',
+    ['name']
+)
+teams_members_df.to_csv('data/governance.teams_members.csv', index=False)
 
-        flat_commits.append(flat_commit)
+# Teams by repositories
+teams_repos_df = pd.json_normalize(
+    governance_json['teams'],
+    'repos',
+    ['name']
+)
+teams_repos_df.to_csv('data/governance.teams_repos.csv', index=False)
 
-df_repos = pd.DataFrame(flat_repos)
-df_commits = pd.DataFrame(flat_commits)
+# Organization roles by teams
+organization_roles_teams_df = pd.json_normalize(
+    governance_json['organization_roles'],
+    'teams',
+    ['name']    
+)
+organization_roles_teams_df.to_csv('data/governance.organization_roles_teams.csv', index=False)
 
-df_repos.to_csv('data-out/repos.csv', index=False)
-df_commits.to_csv('data-out/commits.csv', index=False)
+# Organization roles by users
+organization_roles_users_df = pd.json_normalize(
+    governance_json['organization_roles'],
+    'users',
+    ['name']    
+)
+organization_roles_users_df.to_csv('data/governance.organization_roles_users.csv', index=False)
+
