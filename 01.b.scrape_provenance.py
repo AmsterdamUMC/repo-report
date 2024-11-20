@@ -1,6 +1,7 @@
 # 01.b.scrape_histories.py
 #
 # Scrape the commit histories of each repo boling to a GitHub organization.
+# NB. GitHub adds metadata like Pull Requests and Comments, which could also be logged.
 #
 # Thomas Pronk, 2024-11-07
 
