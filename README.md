@@ -8,8 +8,8 @@ Developed using Python 3.13.0
 1. Clone this repo to your device
 2. Install the libraries in `requirements.txt`
 3. Set up the two environment variables below:
-    a. `GITHUB_TOKEN` containing a GitHub personal access token. It should provide the (classic) permissions `repo` and `admin:org`
-    b. `ORG_NAME` containing the organization name
+    * `GITHUB_TOKEN` containing a GitHub personal access token. It should provide the (classic) permissions `repo` and `admin:org`
+    * `ORG_NAME` containing the organization name
 
 # How to use
 
