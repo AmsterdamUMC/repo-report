@@ -20,6 +20,7 @@ from shared import log_raw, get_request
 
 # *** Constants
 ORG_NAME = os.environ['ORG_NAME']
+# Classic token with scopes: repo, reead:org
 GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
 
 # *** Globals
@@ -156,9 +157,9 @@ for org_role_in in org_roles_in.raw_data['roles']:
 
 # Wrap up 
 print(json.dumps(org_out, indent = 2))
-with open('data/governance.clean.json', 'w') as f:
+with open('data-in/governance.clean.json', 'w') as f:
     json.dump(org_out, f, indent = 2)
-with open('data/governance.raw.json', 'w') as f:
+with open('data-in/governance.raw.json', 'w') as f:
     json.dump(raw_out, f, indent = 2)
 
 # Close connections
