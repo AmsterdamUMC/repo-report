@@ -147,11 +147,15 @@ df_repo_summary = df_repo_summary \
 
 df_repo_summary.to_csv('data-out/repo_summary.csv', index=False)
 
-# Make department summary
-df_department_summary = df_department_contacts \
-    .merge(df_teams_members, how='left')
+# Make member summary
+df_member_summary = df_department_contacts \
+    .merge(df_teams_members, how='left') \
+    .groupby(['login'], as_index=True) \
+    .agg({'name': 'unique'}) \
+    .agg({'name': ', '.join}) \
+    .rename(columns={'name': 'departments'}) 
 
-df_department_summary.to_csv('data-out/department_summary.csv', index=False)
+df_member_summary.to_csv('data-out/member_summary.csv', index=True)
 
 # Report members that are not associated with any departments
 df_members_summary = df_members \
