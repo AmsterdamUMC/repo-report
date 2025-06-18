@@ -1,6 +1,6 @@
-# 02.summarize.py
-#
-import json, pandas as pd
+# 02.a.summarize_repos.py
+
+import math, json, pandas as pd
 pd.options.display.max_rows = 2000
 
 # *** Summarize the governance data into a set of tables
@@ -75,7 +75,7 @@ df_n_repo_teams = df_teams_repos \
     rename(columns={'name': 'team_total'})
 
 # Merge all repo summary variables together
-df_summary = df_n_repo_user_total. \
+df_repo_summary = df_n_repo_user_total. \
     merge(df_n_repo_user_roles, how='left'). \
     merge(df_n_repo_members, how='left'). \
     merge(df_n_repo_ocs, how='left'). \
@@ -141,27 +141,23 @@ df_joined_valid_repo_admins = df_valid_repo_admins \
     .rename(columns={'login': 'admins'}) 
 
 # Add escalation paths to summary
-df_summary = df_summary \
+df_repo_summary = df_repo_summary \
     .merge(df_joined_valid_repo_admins, how='left') \
     .merge(df_joined_valid_repo_admin_departments, how='left')
 
-df_summary.to_csv('data-out/df_summary.csv', index=False)
+df_repo_summary.to_csv('data-out/repo_summary.csv', index=False)
 
+# Make department summary
+df_department_summary = df_department_contacts \
+    .merge(df_teams_members, how='left')
 
-# Escalation level 2b. Teams with admin rights on a repo. Only used by one department so far; not processed further.
-# df_teams_repos \
-#     .loc[df_teams_repos['admin']]
+df_department_summary.to_csv('data-out/department_summary.csv', index=False)
 
-
-
-    # .agg({'name': ', '.join})
-    # ['name'].agg(['unique']) \
-    # .agg({'unique': ', '.join})
-    # agg({'login': ',u '.join})
-#     [['login', 'name']] \
-
-# . \unique
-#     groupby('full_name', as_index=False). \
-#     agg({'login': ', '.join})
-    #apply(','.join)
-    # rename(columns={'login': 'member_total'})
+# Report members that are not associated with any departments
+df_members_summary = df_members \
+    .merge(
+        df_teams_members[df_teams_members['name'].isin(df_department_contacts['name'])][['login', 'name']],
+        how = 'left',
+        on = 'login'
+    )
+list(df_members_summary[df_members_summary['name'].isna()]['login'])
