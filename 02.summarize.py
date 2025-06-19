@@ -165,3 +165,23 @@ df_members_summary = df_members \
         on = 'login'
     )
 list(df_members_summary[df_members_summary['name'].isna()]['login'])
+
+# Associate outside collaborators with departments via the private repos that they have permissions for
+
+# Repo names and visibility levels
+df_repos = pd.json_normalize(
+    governance_json['repos'],
+    meta = ['full_name', 'visibility']
+)[['full_name', 'visibility']]
+
+# Only private repos
+df_repos_private = df_repos[df_repos['visibility'] == 'private']
+
+# Join with collabators
+df_ocs_by_private_repos = df_repos_private \
+    .merge(df_collaborators, how='left') \
+    .merge(df_ocs, how='right') 
+
+# Export to table
+df_ocs_by_private_repos.to_csv('data-out/ocs_by_private_repos.csv', index=True)
+
