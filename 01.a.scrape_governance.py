@@ -43,6 +43,7 @@ for repo_in in org_in.get_repos():
     log_raw(raw_out, 'org_in.get_repos()', repo_in)
     repo_out = {
         'full_name': repo_in.full_name,
+        'visibility': repo_in.visibility,
         'collaborators': []
     }
     # Process each collaborator of the current repo
@@ -69,9 +70,6 @@ for member_in in org_in.get_members():
         'role': organization_membership_in.role,
         'state': organization_membership_in.state
     })
-    if (member_in.login == 'tpronk-tester'):
-        print('mark')
-    
 
 # Process each outside collaborator of the organization
 org_out['outside_collaborators'] = []
