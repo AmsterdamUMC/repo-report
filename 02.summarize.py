@@ -106,7 +106,7 @@ owners = df_members \
 # Escalation level 2. Department contact (associated with repo or repo admins)
 # df_department_contacts has one row per department
 df_department_contacts = pd \
-    .read_csv('data-in/department-contacts.tsv', sep='\t', header=0) \
+    .read_csv('data-in/department-contacts.tsv', sep='\t', header = 0) \
     .rename(columns={'GitHub Username': 'dc_login', 'Department': 'name'}) \
     [['dc_login', 'name']] \
     .groupby('name', as_index=False) \
@@ -155,7 +155,7 @@ df_member_summary = df_department_contacts \
     .agg({'name': ', '.join}) \
     .rename(columns={'name': 'departments'}) 
 
-df_member_summary.to_csv('data-out/member_summary.csv', index=True)
+df_member_summary.to_csv('data-out/member_summary.csv', index = True)
 
 # Report members that are not associated with any departments
 df_members_summary = df_members \
@@ -177,11 +177,13 @@ df_repos = pd.json_normalize(
 # Only private repos
 df_repos_private = df_repos[df_repos['visibility'] == 'private']
 
-# Join with collabators
+# For each outide collaborator, list each private repo they have permissions for, and link those repos to departments
 df_ocs_by_private_repos = df_repos_private \
-    .merge(df_collaborators, how='left') \
-    .merge(df_ocs, how='right') 
+    .merge(df_collaborators, how = 'left') \
+    .merge(df_ocs, how = 'right') \
+    .merge(df_repo_summary[['full_name', 'departments']], how = 'left')
 
-# Export to table
-df_ocs_by_private_repos.to_csv('data-out/ocs_by_private_repos.csv', index=True)
+# Export to table: list of outside collaborators and the private repos each has access to
+df_ocs_by_private_repos.to_csv('data-out/outside_collaborator_summary.csv', index = True)
+
 
