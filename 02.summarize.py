@@ -186,4 +186,51 @@ df_ocs_by_private_repos = df_repos_private \
 # Export to table: list of outside collaborators and the private repos each has access to
 df_ocs_by_private_repos.to_csv('data-out/outside_collaborator_summary.csv', index = True)
 
+# Read audit log
+audit_json = []
+with open('data-in/audit_log.00.json', 'r') as f:
+    for line in f:
+        if line.strip():  # skip empty lines
+            audit_json.append(json.loads(line))
+
+# Get dates that members and outside collaborators got added to the organization
+df_audit = pd.json_normalize(audit_json)
+df_audit_member = df_audit[df_audit['action'].isin(['org.add_member'])]
+df_audit_member = df_audit_member[['@timestamp', 'actor', 'action', 'user']]
+df_audit_member = df_audit_member.rename(columns = {'user': 'subject', '@timestamp': 'timestamp'})
+
+df_audit_oc = df_audit[df_audit['action'].isin(['org.add_outside_collaborator'])]
+df_audit_oc = df_audit_oc[['@timestamp', 'actor', 'action', 'invitee']]
+df_audit_oc = df_audit_oc.rename(columns = {'invitee': 'subject', '@timestamp': 'timestamp'})
+
+df_audit_users = pd.concat([df_audit_member, df_audit_oc], ignore_index=True)
+df_audit_users = df_audit_users.sort_values(by='timestamp')
+df_audit_users['date_added'] = pd.to_datetime(df_audit_users['timestamp'], unit = 'ms')
+
+# Offset: number of users at start of audit logs
+offset = 44
+df_audit_users['user_count'] = range(offset, len(df_audit_users) + offset)
+
+# invitee
+df_audit_users.to_csv('data-out/date_added.csv', index = True)
+ 
+# Draw user counts
+import matplotlib.pyplot as plt
+import numpy as np
+x = df_audit_users['date_added']
+x2 = df_audit_users['timestamp']
+y = df_audit_users['user_count']
+plt.plot(x, y)
+plt.xlabel('Time')
+plt.ylabel('Count')
+plt.title('Number of members & outside collaborators over the past year')
+plt.xticks(rotation=45)
+plt.tight_layout()
+ax = plt.gca()
+ax.set_ylim([0, len(df_audit_users) + offset])
+z = np.polyfit(x2, y, 1)
+p = np.poly1d(z)
+plt.plot(x, p(x2), linestyle = '--')
+plt.show()
+
 
