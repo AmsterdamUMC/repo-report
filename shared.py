@@ -18,7 +18,7 @@ def log_raw(raw_out, request, result):
     except:
         raw_result['raw_headers'] = None
         
-    print(json.dumps(raw_result, indent = 2))
+    # print(json.dumps(raw_result, indent = 2))
     raw_out.append(raw_result)
 
 # Make a raw request to the GitHub REST API via PyGithub

@@ -5,11 +5,16 @@ Generate machine-actionable reports from the information contained in a GitHub o
 Developed using Python 3.13.0
 
 # How to install
-1. Clone this repo to your device
-2. Install the libraries in `requirements.txt`
-3. Set up the two environment variables below:
-    * `RR_GITHUB_TOKEN` containing a GitHub personal access token. It should provide the (classic) permissions `repo` and `admin:org`
-    * `RR_ORG_NAME` containing the organization name
+1. Create an environment variable `RR_ORG_NAME`, with the name of the organization-to-scrape
+2. Create an environment variable `RR_GITHUB_TOKEN`, which should be a GitHub personal access token. 
+    * For fine-grained tokens (preferred):
+      * Make the organization-to-scrape the resource owner
+      * Provide accesss to All repositories
+      * Under repository permissions, provide read-only access to [Metadata](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=2022-11-28#repository-permissions-for-metadata).
+      * Under organization permissions, provide read-only access to [Members](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=2022-11-28#organization-permissions-for-members) and [Custom organization roles](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=2022-11-28#organization-permissions-for-custom-organization-roles).  
+    * For classic tokens (not recommended), select the scopes `repo` and `admin:org`
+3. Clone this repo to your device
+4. Install the libraries in `requirements.txt`.
 
 # How to use
 

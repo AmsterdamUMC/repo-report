@@ -19,9 +19,9 @@ from github import Auth
 from shared import log_raw, get_request
 
 # *** Constants
-ORG_NAME = os.environ['ORG_NAME']
+ORG_NAME = os.environ['RR_ORG_NAME']
 # Classic token with scopes: repo, reead:org
-GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
+GITHUB_TOKEN = os.environ['RR_GITHUB_TOKEN']
 
 # *** Globals
 org_out = {}
@@ -39,7 +39,10 @@ log_raw(raw_out, 'gh.get_organization(ORG_NAME)', org_in)
 
 # Process each repo of the current organization
 org_out['repos'] = []
-for repo_in in org_in.get_repos():
+repos_in = org_in.get_repos()
+print("Scraping " + str(repos_in.totalCount) + " repos")
+for repo_in in repos_in:
+    print(repo_in)
     log_raw(raw_out, 'org_in.get_repos()', repo_in)
     repo_out = {
         'full_name': repo_in.full_name,
@@ -61,7 +64,10 @@ for repo_in in org_in.get_repos():
 
 # Process each member of the organization
 org_out['members'] = []
-for member_in in org_in.get_members():
+members_in = org_in.get_members()
+print("Scraping " + str(members_in.totalCount) + " members")
+for member_in in members_in:
+    print(member_in)
     log_raw(raw_out, 'org_in.get_members()', member_in)    
     organization_membership_in = member_in.get_organization_membership(ORG_NAME)
     log_raw(raw_out, 'member_in.get_organization_membership(ORG_NAME)', organization_membership_in)    
@@ -73,7 +79,10 @@ for member_in in org_in.get_members():
 
 # Process each outside collaborator of the organization
 org_out['outside_collaborators'] = []
-for outside_collaborator_in in org_in.get_outside_collaborators():
+outside_collaborators_in = org_in.get_outside_collaborators()
+print("Scraping " + str(outside_collaborators_in.totalCount) + " outside collaborators")
+for outside_collaborator_in in outside_collaborators_in:
+    print(outside_collaborator_in)
     log_raw(raw_out, 'org_in.get_outside_collaborators()', outside_collaborator_in)    
     org_out['outside_collaborators'].append({
         'login': outside_collaborator_in.login
@@ -81,7 +90,10 @@ for outside_collaborator_in in org_in.get_outside_collaborators():
 
 # Process each team of the current organization
 org_out['teams'] = []
-for team_in in org_in.get_teams():
+teams_in = org_in.get_teams()
+print("Scraping " + str(teams_in.totalCount) + " teams")
+for team_in in teams_in:
+    print(team_in)
     log_raw(raw_out, 'org_in.get_teams()', team_in)
     team_out = {
         'id': team_in.id,
@@ -124,10 +136,12 @@ for team_in in org_in.get_teams():
     org_out['teams'].append(team_out)
 
 # Process each organization role. Per organization role, list which teams and users have that role.
+print("Scraping organiation roles")
 org_out['organization_roles'] = []
 org_roles_in = get_request(gh, '/orgs/' + ORG_NAME + '/organization-roles')
 log_raw(raw_out, "get_request('/orgs/' + ORG_NAME + '/organization-roles')", org_roles_in)
 for org_role_in in org_roles_in.raw_data['roles']:
+    print(org_role_in)
     org_role_out = {
         'id': org_role_in['id'],
         'name': org_role_in['name'],

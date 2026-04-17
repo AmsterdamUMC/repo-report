@@ -188,7 +188,7 @@ df_ocs_by_private_repos.to_csv('data-out/outside_collaborator_summary.csv', inde
 
 # Read audit log
 audit_json = []
-with open('data-in/audit_log.00.json', 'r') as f:
+with open('data-in/audit-log.00.json', 'r') as f:
     for line in f:
         if line.strip():  # skip empty lines
             audit_json.append(json.loads(line))
