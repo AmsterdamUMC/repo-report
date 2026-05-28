@@ -1,4 +1,4 @@
-# 01.a.scrape_governance.py
+# 01.scrape-github.py
 #
 # Scrape the governance structure of a GitHub organization by collecting information about each:
 # - Repository
@@ -7,10 +7,8 @@
 # - Organization role
 
 # The script produces two files:
-# * `data-out/org_out.json`, which contains the organization snapshot. See details of this file below.
-# * `data-out/raw_out.json`, which contains raw headers and data for each request made by the script to the GitHUB REST API. 
-
-# Thomas Pronk, 2024-11-20
+# * `data/github-snapshot.json`, which contains the organization snapshot. See details of this file below.
+# * `data/rest-api-logs.json,`, which contains raw headers and data for each request made by the script to the GitHUB REST API. 
 
 # *** Libraries
 import os, json
@@ -169,9 +167,9 @@ for org_role_in in org_roles_in.raw_data['roles']:
 
 # Wrap up 
 print(json.dumps(org_out, indent = 2))
-with open('data-in/governance.clean.json', 'w') as f:
+with open('data/github-snapshot.json', 'w') as f:
     json.dump(org_out, f, indent = 2)
-with open('data-in/governance.raw.json', 'w') as f:
+with open('data/rest-api-logs.json', 'w') as f:
     json.dump(raw_out, f, indent = 2)
 
 # Close connections

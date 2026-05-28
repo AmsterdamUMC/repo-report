@@ -1,8 +1,17 @@
 # repo-report
-Generate machine-actionable reports from the information contained in a GitHub organization.
+Python scripts to automate administrative tasks of a GitHub organization. The scripts scrape and aggregate multiple sources of data about a GitHub organization, in order to produce a collection of tables that can next be fed back into our administration.
+
+# How this repo is organized
+The root folder contains the Python scripts and `data/` contains the data.
+
+# Overview of data sources
+See the *GitHub Compendium Admin Guide::Exporting GitHub data* for details of each GitHub data source
+* **GitHub REST API.** Produced by `01.scrape-github.py` and stored in `data/github-snapshot.json`. For details of this file, see [Structure of snapshot](#structure-of-snapshot)
+* **GitHub Audit logs.** Manually downloaded via the GitHub web interface and stored in files numbered `data/audit-log.01.json`, `data/audit-log.02.json`, etc. The combined log is produced by `02.join-audit-logs.py` and stored in `data/audit-log.tsv`.
+* **Member Contact Information.** Manually copied from our administration and stored in `data/member-contact-information.tsv`
 
 # Requirements
-Developed using Python 3.13.0
+Developed in a venv virtual environment on Windows 11, using Python 3.13.0 and pip 26.1.1 as package manager.
 
 # How to install
 1. Create an environment variable `RR_ORG_NAME`, with the name of the organization-to-scrape
@@ -18,18 +27,28 @@ Developed using Python 3.13.0
 
 # How to use
 
-## Produce a snapshot of the governance structure
-Run `01.a.scrape_governance.py`. This script produces two output files:
-* `data-out/governance.clean.json`, which contains the organization snapshot. See details of this file below.
-* `data-out/governance.raw.json`, which contains raw headers and data for each request made by the script to the GitHUB REST API.
+## 01. Make a snapshot of the current state of the GitHub organization
+`01.scrape-github.py` produces a snapshot with all kinds of information we can obtain about the current state of our organization via the GitHub REST API. Taking this snapshot can take an hour or longer. 
 
-## Produce a snapshot of the provenance of the repositories
-Run `01.b.scrape_provenance.py`. This script produces two output files:
-* `data-out/provenance.clean.json`, which contains the provenance snapshot. I haven't documented this file yet.
-* `data-out/provenance.raw.json`, which contains raw headers and data for each request made by the script to the GitHUB REST API.
+The script produces two output files:
+* `data/github-snapshot.json`, which contains the organization snapshot. See details of this file below.
+* `data/rest-api-logs.json`, which contains raw headers and data for each request made by the script to the GitHUB REST API.
 
-## Details of `data-out/governance.raw.json`
-This file is a JSON data structure containing a snapshot of the governance of the GitHub organization. Below is a summary of the information you can find in here, using [JSONPath](https://en.wikipedia.org/wiki/JSONPath) syntax to point to different parts of the file.
+## 02. Combine the GitHub audit logs into one table
+`02.join-audit-logs.py` parses the GitHub organization audit logs encoded as newline delimited JSON in `data/audit-log.01.json`, `data/audit-log.02.json`. It combines these logs into a single table, removes duplicates, and exports the logs to a tab-separated file `data/audit-log.tsv`.
+
+## 03. Analyze the GitHub members
+`03.analyze-members.py` parses three files with member information, being:
+* `data/github-snapshot.json`; the snapshot of the current state
+* `data/audit-log.tsv`; the audit log
+* `data/member-contact-information.tsv`; the member contact information table
+
+The script produces a combined table, containing all members found both in the snapshot and member administration, joined on their GitHub login. If the audit log contains information on when a member was added (and by who), then this information is appended to the history already tracked in the member administation.
+
+The table is stored in `members-joined.tsv`, which can be copy-pasted into a spreadsheet to see an combined overview of the members tracked by GitHub and our administration, and their history. WARNING: if we ever start feeding the output of this script back into our member administration, we need to be careful with how we arrange the history.
+
+# Structure of snapshot
+The snapshot with information obtained about the current state of our organization via the GitHub REST API is aimed to be a comprehensive as possible. Below is a summary of the information you can find in here, using [JSONPath](https://en.wikipedia.org/wiki/JSONPath) syntax to point to different parts of the file.
 
 * `$.repos[*]` lists each repository of the organization. See the API documentation at [List organization repositories](https://docs.github.com/en/rest/repos/repos#list-organization-repositories)
     * `$.repos[*].full_name` identifies this repo by its name (`<login/organization>/<repo>`)
