@@ -82,5 +82,8 @@ df_joined['history'] = df_joined.apply(merge_history, axis=1)
 # Drop the original history columns, as we now have a single merged history column
 df_joined = df_joined.drop(columns=['history_audit', 'history_ci'])
 
+# Sort members alphabetically by login (case-insensitive)
+df_joined = df_joined.sort_values(by='login', key=lambda s: s.str.lower())
+
 # Write the joined table to a TSV
 df_joined.to_csv('data/members-joined.tsv', sep='\t', index=False)
