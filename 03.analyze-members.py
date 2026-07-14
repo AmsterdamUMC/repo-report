@@ -4,14 +4,15 @@
 
 # Libraries & global settings
 import math, json, pandas as pd
+import os
 pd.options.display.max_rows = 2000
-
+dir_path='data-fer'
 # *** Table of current members, obtained via REST API
 
 # Some minmal processing; only to convert the JSON array of members to a pandas data 
 
 # Read governance.clean.json
-with open('data/github-snapshot.json') as f:
+with open(os.path.join(dir_path,'github-snapshot.json')) as f:
     governance_json = json.load(f)
 
 # Convert the JSON array of members to a pandas data frame
@@ -27,7 +28,7 @@ df_members = pd.json_normalize(
 # For example, "2024-05-01. alice. Added member to organization"
 
 # Read audit log into a data frame
-df_audit = pd.read_csv('data/audit-log.tsv', sep="\t", low_memory=False)
+df_audit = pd.read_csv(os.path.join(dir_path,'audit-log.tsv'), sep="\t", low_memory=False)
 
 # Find audit log entries where a member got added to the organization
 df_audit_member_added = df_audit[df_audit['action'].isin(['org.add_member'])]
@@ -55,7 +56,11 @@ df_audit_member_added = df_audit_member_added[['login', 'history_audit']]
 # We'll outer join this table with df_members to get a table with the logins present in both tables.
 
 # Read member contact information from data/member_contacts.tsv
-df_member_ci = pd.read_csv('data/member-contact-information.tsv', sep='\t')
+#df_member_ci = pd.read_csv(os.path.join('data','member-contact-information.tsv.csv'), sep=',') #sep='\t')
+df_member_ci = pd.read_csv(
+    os.path.join('data', 'member-contact-information.tsv.csv'),
+    encoding='cp1252'
+)
 
 # Rename "history" to "history_ci" to distinguish it from the audit log history
 df_member_ci = df_member_ci.rename(columns = {'history': 'history_ci'})
@@ -86,4 +91,4 @@ df_joined = df_joined.drop(columns=['history_audit', 'history_ci'])
 df_joined = df_joined.sort_values(by='login', key=lambda s: s.str.lower())
 
 # Write the joined table to a TSV
-df_joined.to_csv('data/members-joined.tsv', sep='\t', index=False)
+df_joined.to_csv(os.path.join(dir_path,'members-joined.tsv'), sep='\t', index=False)
