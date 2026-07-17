@@ -3,3 +3,4 @@ repo-report.code-workspace
 .vscode
 __pycache__
 data
+output*
