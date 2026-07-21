@@ -1,10 +1,11 @@
 # 02.join-audit-logs.py
 # Combines the audit log files into a data frame, written to data/audit-log.tsv
-import json, pandas as pd
+import json, pandas as pd, glob
 
 # Read audit log
 df_audit = None
-audit_logs = ['data/audit-log.00.json', 'data/audit-log.01.json']
+
+audit_logs = glob.glob("data/audit-log.*.json")
 for audit_log in audit_logs:
     audit_json = []
     with open(audit_log, 'r') as f:
