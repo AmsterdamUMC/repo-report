@@ -1,6 +1,9 @@
 import json
 import os
 from datetime import datetime, timezone
+import pandas as pd
+from pandas.errors import ParserError
+import csv
 
 # 📁 Configured Asset Slugs
 SNAPSHOT_FILE = "data-in/github-snapshot.json"
@@ -8,6 +11,13 @@ GOVERNANCE_FILE = "data-in/governance.clean.json"
 RAW_GOV_FILE = "data-in/governance.raw.json"
 RAW_LOGS_FILE = "data-in/rest-api-logs.json"
 AUDIT_REPORT = "output/github_governance_audit.md"
+
+#Manual_Member_overview = "data-in/members-joined.tsv"
+Manual_Member_overview = "data/member-contact-information.tsv.csv"
+
+#"data/members-joined" vs data-in/github-snapshot.json/members
+#                         data-in/governance.clean.json/members
+
 
 os.makedirs("output", exist_ok=True)
 
@@ -19,12 +29,45 @@ def load_json(filepath):
             return json.load(f)
         except json.JSONDecodeError:
             return None
+        
+def load_tsv(filepath):
+    if not os.path.exists(filepath):
+        return None
+    try:
+        return pd.read_csv(filepath, sep="\t", encoding="utf-8")
+    except (ParserError, UnicodeDecodeError):
+        return None
+
+def load_csv(filepath):
+    if not os.path.exists(filepath):
+        print("path not found")
+        return None
+    try:
+        users=[]
+        with open(filepath, "r") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                print(row[3])
+                users.append(row[3])
+                
+                #print(row)
+        #print("@@@")
+        #print("hallo")
+        return users
+        #return pd.read_csv(filepath)
+    except (ParserError, UnicodeDecodeError):
+        return None
 
 def run_audit():
     snapshot = load_json(SNAPSHOT_FILE) or {}
     governance = load_json(GOVERNANCE_FILE) or {}
     raw_gov = load_json(RAW_GOV_FILE) or []
     logs = load_json(RAW_LOGS_FILE) or []
+    manual_members = load_csv(Manual_Member_overview)
+    #manual_members.head()
+    print("HALLO")
+    print(manual_members)
+
 
     # Current execution operational timeline baseline (mid-2026 anchor window)
     current_date = datetime(2026, 7, 17, tzinfo=timezone.utc)
@@ -33,12 +76,38 @@ def run_audit():
     repos = snapshot.get("repos", [])
     teams = snapshot.get("teams", [])
     outside_collabs = snapshot.get("outside_collaborators", [])
-    
+    members = snapshot.get("members", []) #can also be governance
+
     org_raw_data = raw_gov[0].get("raw_data", {}) if isinstance(raw_gov, list) and len(raw_gov) > 0 else {}
 
     with open(AUDIT_REPORT, "w", encoding="utf-8") as out:
         out.write("# 🛡️ Automated Enterprise GitHub Governance Analysis\n\n")
         out.write(f"_Audit Executed Chronologically on: `{current_date.strftime('%Y-%m-%d %H:%M:%S')} UTC`_\n\n")
+
+        # =====================================================================
+        # FER. NEW IMPLEMNT
+        # =====================================================================
+        #print(members)
+        out.write("##  0. GitHub Username \n")
+        out.write("Flags ......\n\n")
+        out.write("| GitHub User Name | Report | Explain |\n")
+        out.write("| :--- | :--- |\n")
+        
+        for member in members:
+            #acitve = member.get('state'==acitve, [])
+            print(member)
+            member_name = member.get("login")
+            if member.get("state") == "active":
+                if member.get("login") in manual_members:
+                    pass #member ok                    
+                else:
+                    out.write(f"| `{f'member/{member_name}'.ljust(25)}` | `{'MISSING'.ljust(8)}` | `member missing from member contact sheet` |\n")
+            elif member.get("state") == "inactive":
+                if member.get("login") in manual_members:
+                    out.write(f"| `{f'member/{member_name}'.ljust(25)}` | `{'INACTIVE'.ljust(8)}` | `member has to be send to inactive members` |\n")
+                else:
+                    pass #CHeck if in inacative members
+
 
         # =====================================================================
         # 1. THE "BUS FACTOR" ASSIGNMENT MONITOR
