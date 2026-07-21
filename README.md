@@ -26,6 +26,50 @@ Developed in a venv virtual environment on Windows 11, using Python 3.13.0 and p
 4. Install the libraries in `requirements.txt`.
 
 # How to use
+The general workflow is visualized below.
+```mermaid
+flowchart TD
+    S1[01.scrape-github.py]:::script
+    S2[02.join-audit-logs.py]:::script
+    S3[03.analyze-members.py]:::script
+
+    A[GitHub REST API]:::inputData
+    C[rest-api-logs.json]:::outputData
+    B[github-snapshot.json]:::outputData
+    D[audit-log.01.json]:::inputData
+    E[audit-log.02.json]:::inputData
+    F[audit-log.tsv]:::outputData
+    G[member-contact-information.tsv]:::inputData
+    H[members-joined.tsv]:::outputData
+
+    S1 --> C 
+    A --> S1 --> B
+
+    D --> S2 --> F
+    E --> S2
+
+    B --> S3 --> H
+    F --> S3
+    G --> S3
+
+    classDef script fill:#F8FAFC,stroke:#64748B,stroke-width:1.5px,stroke-dasharray: 4 3,color:#0F172A;
+    classDef inputData fill:#DCEBFA,stroke:#2563EB,stroke-width:2px,color:#111827;
+    classDef outputData fill:#FCE4C5,stroke:#C2410C,stroke-width:2px,color:#111827;
+
+
+    subgraph Legend
+        direction LR
+        L1[Input data]:::inputData
+        L2[Output / derived data]:::outputData
+        L3[Script]:::script
+    end
+
+    classDef script fill:#E5E7EB,stroke:#6B7280,stroke-width:2px,color:#111827;
+    classDef inputData fill:#DCEBFA,stroke:#2563EB,stroke-width:2px,color:#111827;
+    classDef outputData fill:#FCE4C5,stroke:#C2410C,stroke-width:2px,color:#111827;
+
+    style L3 stroke-dasharray: 5 3;
+```
 
 ## 01. Make a snapshot of the current state of the GitHub organization
 `01.scrape-github.py` produces a snapshot with all kinds of information we can obtain about the current state of our organization via the GitHub REST API. Taking this snapshot can take an hour or longer. 
