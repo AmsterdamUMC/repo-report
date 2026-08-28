@@ -37,8 +37,7 @@ unassigned_repos = [repo for repo in all_root_repos if repo not in all_assigned_
 
 # --- Print Results ---
 print(f"1. Total Root Repositories Found: {len(all_root_repos)}")
-
-print(all_root_repos)
+#print(all_root_repos)
 
 print(f"\n2. Teams Mapping Sample (First 3 teams):")
 for team_name, repos in list(team_repo_map.items())[:3]:
