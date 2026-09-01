@@ -1,5 +1,7 @@
 # Welcome to Amsterdam UMC GitHub organization! 
 
+![alt text](AUMC.png "help"){width=65%}
+
 This is the central hub where researchers, students, and staff can share code and collaborate on projects. 
 
 Do you work at Amsterdam UMC and want to join? Learn how to become a member of our GitHub organization 
@@ -7,4 +9,4 @@ on our [intranet pages about GitHub](https://amsterdamumc.service-now.com/esc?id
 
 In addition to the repositories featured here, you’ll find even more code shared by Amsterdam UMC colleagues on GitHub 
 through these research groups:
-- [Circulatory Health - UMC Utrecht](https://github.com/AmsterdamUMC/repo-report) - Work done within the RDM
+- [RDM repo-report](https://github.com/AmsterdamUMC/repo-report) - Work done within the RDM
