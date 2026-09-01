@@ -1,6 +1,4 @@
-# Welcome to Amsterdam UMC GitHub organization! 
-
-![alt text](AUMC.png "help"){width=65%}
+# Welcome to Amsterdam UMC GitHub organization! <img src="AUMC.png" alt="alt text" title="help" style="width: 5%; height: auto;" />
 
 This is the central hub where researchers, students, and staff can share code and collaborate on projects. 
 
@@ -10,3 +8,6 @@ on our [intranet pages about GitHub](https://amsterdamumc.service-now.com/esc?id
 In addition to the repositories featured here, you’ll find even more code shared by Amsterdam UMC colleagues on GitHub 
 through these research groups:
 - [RDM repo-report](https://github.com/AmsterdamUMC/repo-report) - Work done within the RDM
+
+
+<img src="AUMC.png" alt="alt text" title="help" style="width: 35%; height: auto;" />
